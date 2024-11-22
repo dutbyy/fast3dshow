@@ -7,9 +7,8 @@ import WebSocketComponent from './compoments/websock';
 function App() {
   return (
     <div>
-      {/* <Earth />  */}
       <RawThree /> 
-      <WebSocketComponent></WebSocketComponent>
+      {/* <WebSocketComponent></WebSocketComponent> */}
     </div>
   );
 }

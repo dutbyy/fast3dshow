@@ -26,47 +26,29 @@ const RawThree = () => {
     // 渲染循环
     var frame = 0;
     var flag = false;
+    let delta = clock.getDelta()
     const animate = () => {
       requestAnimationFrame(animate);
-      const delta = clock.getDelta()
       frame++;
-      if (frame % 1000 === 0)
+      if (frame % 100 === 0)
       {
-        const delta = clock.getDelta();
-        console.log(`1000 frame cost ${delta} ms`)
+        delta = clock.getDelta();
+        console.log(`average frame cost ${delta*10} ms`)
       }
 
-      unit_step(scene_manager);
+      // unit_step(scene_manager);
        
-      const mesh_1 = scene_manager.getUnit(1);
-      const mesh_2 = scene_manager.getUnit(2);
-      if(mesh_1 && mesh_2 && !flag && mesh_1.mesh && mesh_2.mesh)
-      {
-        mesh_1.laserToMesh(mesh_2.mesh, 0xff0000,  10);
-        flag = true;
-      }
+      // const mesh_1 = scene_manager.getUnit(1);
+      // const mesh_2 = scene_manager.getUnit(2);
+      // if(mesh_1 && mesh_2 && !flag && mesh_1.mesh && mesh_2.mesh)
+      // {
+      //   mesh_1.laserToMesh(mesh_2.mesh, 0xff0000,  10);
+      //   flag = true;
+      // }
       scene_manager.update()
     };
     animate();
-
-    scene_manager.updateUnits(
-      [
-        {
-          id: 1,
-          name: "tank-1",
-          type: "tank",
-          position: [0, 0, 0],
-          angle: 0,
-        },
-        {
-          id: 2,
-          name: "四旋翼",
-          type: "quadcopter",
-          position: [300, 300, 50],
-        },
-      ]
-    )
-    
+   
 
     // 清理函数
     return () => {
@@ -96,22 +78,28 @@ let units_info = [
     position: [300, 300, 50],
     angle: 0,
   },
+  {
+    id: 3,
+    name: "固定翼",
+    type: "mq1",
+    position: [500, 300, 50],
+    angle: 0,
+  },
 ]
 function unit_step(scene_manager) {
   cnt +=1;
-  if (cnt % 3 == 0) {
+  if (1) {
     tank = units_info[0];
     tank.position[0] += Math.sin(tank.angle) * 1;
     tank.position[2] += Math.cos(tank.angle) * 1;
     tank.angle = (tank.angle + 0.004) % (2 * Math.PI);
     scene_manager.updateUnits(units_info);
   }
-  if (cnt % 5 == 0) {
+  if (1) {
     tank = units_info[1];
     tank.position[0] += Math.sin(tank.angle) * 1;
     tank.position[2] += Math.cos(tank.angle) * 1;
     tank.angle = (tank.angle + 0.001) % (2 * Math.PI);
     scene_manager.updateUnits(units_info);
   }
-
 }

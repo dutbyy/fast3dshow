@@ -8,7 +8,7 @@ function App() {
   return (
     <div>
       <RawThree /> 
-      {/* <WebSocketComponent></WebSocketComponent> */}
+      <WebSocketComponent></WebSocketComponent>
     </div>
   );
 }

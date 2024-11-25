@@ -120,6 +120,7 @@ class CustomCameraControls extends THREE.Controls {
         up.crossVectors(direction, right).normalize();
         
         if (keys["w"] || keys["W"]) {
+            console.log("dir is ", direction)
             moveVector.addScaledVector(direction, moveSpeed); // 向前移动
         }
         if (keys["s"] || keys["S"]) {

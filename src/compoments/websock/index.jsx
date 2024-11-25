@@ -20,7 +20,16 @@ const WebSocketComponent = () => {
             const receivedMessage = event.data;
             setMessage(receivedMessage);
             // console.log('Received message:', receivedMessage);
-            console.log('Received message:', JSON.parse(receivedMessage));
+            const units = JSON.parse(receivedMessage)
+            // console.log('Received message:', JSON.parse(receivedMessage));
+            const custom_event = new CustomEvent(
+                "UnitsEvent", 
+                {
+                    detail : units
+                }
+            )
+            window.dispatchEvent(custom_event)
+
         };
 
         socket.onclose = () => {
@@ -29,7 +38,8 @@ const WebSocketComponent = () => {
         };
 
         socket.onerror = (error) => {
-            console.error('WebSocket error:', error);
+            // console.error('WebSocket error:', error);
+            // console.
         };
 
         // 清理函数
@@ -37,18 +47,6 @@ const WebSocketComponent = () => {
             socket.close();
         };
     }, []);
-
-    // 发送信号
-    const sendMessage = () => {
-        // if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-        //     const signal = 'Hello, WebSocket!';
-        //     socketRef.current.send(signal);
-        //     console.log('Sent message:', signal);
-        // } else {
-        //     console.log('WebSocket is not open yet');
-        // }
-    };
-
     return ;
 };
 

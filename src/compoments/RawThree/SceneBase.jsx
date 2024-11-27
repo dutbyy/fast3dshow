@@ -26,8 +26,8 @@ const NAME2MODEL = new Map([
     "mq1",
     {
       model: "MQ-1 Predator.stl",
-      scale: [0.01, 0.01, 0.01],
-      texture: "ddss/tank1.png",
+      scale: [0.02, 0.02, 0.02],
+      // texture: "ddss/tank1.png",
     },
   ],
 ]);
@@ -82,9 +82,9 @@ class UnitMesh {
         loader.load(model_config.model, (geometry) => {
           const texture_loader = new TextureLoader();
           const texture = texture_loader.load(model_config.texture);
-          const material = new THREE.MeshLambertMaterial({
-            color: 0xffffff,
-            // map: texture,
+          const material = new THREE.MeshStandardMaterial({
+            color: 0x000000,
+            map: texture,
             // metalness: 0.5,
             // roughness: 0.5,
           });
@@ -116,14 +116,30 @@ class UnitMesh {
     }
   }
 
-  update(config) {
+  update(config=null) {
     if (!this.mesh) {
       this.add_to(this.scene);
       return;
     }
-    this.config = config;
-    this.mesh.position.set(...config.position);
-    if (config.angle && this.model) this.model.rotation.y = config.angle;
+    if (config)
+      this.config = config;
+    this.mesh.position.set(...this.config.position);
+    this.model.rotation.set(0,0,0)
+    // if (this.config.angle && this.model) this.model.rotation.y = this.config.angle;
+
+    if (this.config.angle && this.model) 
+    {
+      const direction = new THREE.Vector3(0,1,0);
+      this.model.rotateOnAxis(direction, this.config.angle);
+    }
+    if (this.config.pitch && this.model) 
+    {
+      const standardXAxis = new THREE.Vector3(1, 0, 0);
+      const localXAxis = standardXAxis.applyQuaternion(this.model.quaternion);
+      const rowuaternion = new THREE.Quaternion().setFromAxisAngle(localXAxis, -this.config.pitch);
+      this.model.quaternion.premultiply(rowuaternion);
+    }
+    // if (this.config.name == "空地制导炸弹#25") console.log("制导炸弹#25", this.config);
     if (this.larserTarget && this.larser) {
       this.updateLarser();
     }
@@ -316,7 +332,8 @@ class ThreeSceneManager {
       } else {
         // console.log("lazy update unit : ", unit)
         const unit_mesh = this.units.get(unit.id);
-        unit_mesh.update(unit);
+        // unit_mesh.update(unit);
+        unit_mesh.config = unit;
       }
     }
     // console.log("现在有的目标:", this.units.keys())
@@ -338,9 +355,11 @@ class ThreeSceneManager {
   }
 
   update() {
-    // for(let unit_id in this.units){
-    //   this.units[unit_id].update();
-    // }
+    for (let unit_id of this.units.keys()) {
+      let unit_mesh = this.units.get(unit_id)
+      if(unit_mesh)
+        unit_mesh.update();
+    }
     if (this.controls) this.controls.update();
     if (this.renderer) this.renderer.render(this.scene, this.camera);
   }
@@ -356,8 +375,16 @@ class ThreeSceneManager {
       0.1,
       100000
     );
-    this.camera.position.set(-0, 50, -100);
-    this.camera.rotateOnAxis(new THREE.Vector3(0, 1, 0), (-3 * Math.PI) / 4);
+    // this.camera = new THREE.OrthographicCamera(
+    //   -1000,
+    //   1000,
+    //   -1000, 
+    //   1000,
+    //   0.1,
+    //   100000
+    // );
+    this.camera.position.set(-100, 50, 200);
+    this.camera.rotateOnAxis(new THREE.Vector3(0, 1, 0), (-1 * Math.PI) / 4);
   }
 
   initRenderer() {
@@ -370,7 +397,7 @@ class ThreeSceneManager {
     this.initSky();
     this.initGround();
     this.initLight();
-    const axesHelper = new THREE.AxesHelper(1000);
+    const axesHelper = new THREE.AxesHelper(1400);
     this.env.add(axesHelper);
     this.scene.add(this.env);
   }
@@ -446,8 +473,8 @@ class ThreeSceneManager {
         loader.load(model_config.model, (geometry) => {
           const texture_loader = new TextureLoader();
           const texture = texture_loader.load(model_config.texture);
-          const material = new THREE.MeshBasicMaterial({
-            color: 0xfffff1,
+          const material = new THREE.MeshLambertMaterial({
+            color: 0xff0000,
             // envMap: this.env_texture,
             // roughness: 0.1,
             // metalness: 1.0, 

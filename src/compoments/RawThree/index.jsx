@@ -30,10 +30,10 @@ const RawThree = () => {
     const animate = () => {
       requestAnimationFrame(animate);
       frame++;
-      if (frame % 100 === 0)
+      if (frame % 1000 === 0)
       {
         delta = clock.getDelta();
-        console.log(`average frame cost ${delta*10} ms`)
+        console.log(`average frame cost ${delta} ms`)
       }
 
       // unit_step(scene_manager);

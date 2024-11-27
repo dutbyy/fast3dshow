@@ -63,7 +63,7 @@ class CustomCameraControls extends THREE.Controls {
 
         const standardXAxis = new THREE.Vector3(1, 0, 0);
         const localXAxis = standardXAxis.applyQuaternion(this.object.quaternion);
-        const rowAngle = - deltaY * 0.003; // 调整航向角
+        const rowAngle = - deltaY * 0.003; // 调整滚转
         const rowuaternion = new THREE.Quaternion().setFromAxisAngle(localXAxis, rowAngle);
         this.camera.quaternion.premultiply(rowuaternion);
 
@@ -120,7 +120,6 @@ class CustomCameraControls extends THREE.Controls {
         up.crossVectors(direction, right).normalize();
         
         if (keys["w"] || keys["W"]) {
-            console.log("dir is ", direction)
             moveVector.addScaledVector(direction, moveSpeed); // 向前移动
         }
         if (keys["s"] || keys["S"]) {

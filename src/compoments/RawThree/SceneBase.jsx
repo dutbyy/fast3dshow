@@ -4,6 +4,8 @@ import { CustomCameraControls } from "./CustomCameraControls";
 import { STLLoader } from "three/examples/jsm/loaders/STLLoader.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { TextureLoader } from "three/src/loaders/TextureLoader.js";
+import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+import { FontLoader } from 'three/addons/loaders/FontLoader.js';
 
 const NAME2MODEL = new Map([
   [
@@ -34,18 +36,20 @@ const NAME2MODEL = new Map([
 const NAME2MESH = new Map()
 
 class UnitMesh {
-  constructor(config) {
+  constructor(config, camera) {
     this.config = config;
     this.name = config.name;
     this.type = config.type; // "tank" | "quadcopter" | "mq1"
     this.mesh = null;
     this.model = null;
+    this.sprite = null;
     this.add_to = this.add_to.bind(this);
     this.scene = null;
     this.larser = null;
     this.larserTarget = null;
     this.search = null;
     this.searchConfig = null;
+    this.camera = camera
   }
 
   add_to_old(scene) {
@@ -100,6 +104,28 @@ class UnitMesh {
     }
   }
 
+  drawText(text) {
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+
+    // 设置画布大小
+    canvas.width = 256;
+    canvas.height = 128;
+
+    // 清除画布
+    context.clearRect(0, 0, canvas.width, canvas.height);
+
+    // 设置字体样式
+    context.font = 'Bold 32px Arial';
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.fillStyle = 'black';
+
+    // 绘制文本
+    context.fillText(text, canvas.width / 2, canvas.height / 2);
+    return canvas;
+  }
+
   add_to(scene) {
     this.scene = scene;
     if (!this.mesh) {
@@ -112,6 +138,18 @@ class UnitMesh {
       this.model = model.clone();
       this.mesh.add(this.model);
       this.mesh.position.set(...this.config.position);
+      
+      const spriteMaterial = new THREE.SpriteMaterial({
+        map: new THREE.CanvasTexture(this.drawText(this.config.name)),
+        color: 0xffffff,//设置颜色
+        transparent:true,
+      });
+      const sprite = new THREE.Sprite(spriteMaterial);
+      this.sprite = sprite;
+      sprite.scale.set(20, 10, 20);  // 设置精灵的大小
+      sprite.position.set(0, 6, 0);  // 设置文本的位置，使其位于立方体上方
+      this.mesh.add(sprite)
+
       scene.add(this.mesh);
     }
   }
@@ -131,17 +169,26 @@ class UnitMesh {
     {
       const direction = new THREE.Vector3(0,1,0);
       this.model.rotateOnAxis(direction, this.config.angle);
+      // this.model.y = this.config.angle;
     }
-    if (this.config.pitch && this.model) 
-    {
-      const standardXAxis = new THREE.Vector3(1, 0, 0);
-      const localXAxis = standardXAxis.applyQuaternion(this.model.quaternion);
-      const rowuaternion = new THREE.Quaternion().setFromAxisAngle(localXAxis, -this.config.pitch);
-      this.model.quaternion.premultiply(rowuaternion);
-    }
+    // if (this.config.pitch && this.model) 
+    // {
+    //   const standardXAxis = new THREE.Vector3(1, 0, 0);
+    //   const localXAxis = standardXAxis.applyQuaternion(this.model.quaternion);
+    //   const rowuaternion = new THREE.Quaternion().setFromAxisAngle(localXAxis, -this.config.pitch);
+    //   this.model.quaternion.premultiply(rowuaternion);
+    // }
     // if (this.config.name == "空地制导炸弹#25") console.log("制导炸弹#25", this.config);
     if (this.larserTarget && this.larser) {
       this.updateLarser();
+    }
+    if (this.sprite)
+    {
+      const distance = this.camera.position.distanceTo(this.mesh.position);
+      // 根据距离调整精灵的缩放比例，保持文本大小恒定
+      const baseScale = 0.8;  // 基础缩放比例
+      const scale = baseScale *Math.max(Math.cbrt(distance * distance), 1) ;  // 防止距离过小导致缩放过大
+      this.sprite.scale.set(scale, scale/2, scale);
     }
   }
 
@@ -274,8 +321,10 @@ class ThreeSceneManager {
     this.camera = null;
     this.renderer = null;
     this.controls = null;
-    this.units = new Map();
+    this.font = null;
 
+    this.units = new Map();
+    
     this.updateUnits = this.updateUnits.bind(this);
     this.handleResize = this.handleResize.bind(this);
     this.handleUnitsEvent = this.handleUnitsEvent.bind(this);
@@ -325,7 +374,7 @@ class ThreeSceneManager {
       uids.push(unit.id);
       if (!this.units.get(unit.id)) {
         // console.log("new a Unit :", unit);
-        let unit_mesh = new UnitMesh(unit);
+        let unit_mesh = new UnitMesh(unit, this.camera);
         unit_mesh.add_to(this.scene);
         this.units.set(unit.id, unit_mesh);
         console.log("Unit add ", unit.id);
@@ -485,6 +534,12 @@ class ThreeSceneManager {
         });
       }
     }
+
+    // const fontLoader = new FontLoader();
+    // fontLoader.load('MSYH.TTF', function (font) {
+    //   this.font = font;
+    // });
+
     return;
   }
   
